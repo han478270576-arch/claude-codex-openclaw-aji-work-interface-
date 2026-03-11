@@ -10,7 +10,23 @@ TOKEN="${OPENCLAW_TEST_TOKEN}"
 START_CMD=(bash "${OPENCLAW_TEST_START_SCRIPT}")
 LOG_FILE=/tmp/openclaw-test-gateway.log
 
-if lsof -iTCP:${PORT} -sTCP:LISTEN -n -P >/dev/null 2>&1; then
+is_listening() {
+  if command -v ss >/dev/null 2>&1; then
+    if ss -ltn "( sport = :${PORT} )" 2>/dev/null | grep -q LISTEN; then
+      return 0
+    fi
+  fi
+
+  if command -v lsof >/dev/null 2>&1; then
+    if lsof -iTCP:${PORT} -sTCP:LISTEN -n -P >/dev/null 2>&1; then
+      return 0
+    fi
+  fi
+
+  return 1
+}
+
+if is_listening; then
   echo "Test gateway is already listening on ${PORT}."
   if [ -n "${TOKEN}" ]; then
     echo "URL: http://127.0.0.1:${PORT}/?token=${TOKEN}"
@@ -23,7 +39,7 @@ fi
 nohup "${START_CMD[@]}" >"${LOG_FILE}" 2>&1 &
 
 for _ in $(seq 1 20); do
-  if lsof -iTCP:${PORT} -sTCP:LISTEN -n -P >/dev/null 2>&1; then
+  if is_listening; then
     echo "Test gateway started."
     if [ -n "${TOKEN}" ]; then
       echo "URL: http://127.0.0.1:${PORT}/?token=${TOKEN}"

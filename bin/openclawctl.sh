@@ -5,6 +5,16 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck disable=SC1091
 . "${SCRIPT_DIR}/../lib/config.sh"
 
+show_listener() {
+  local port="$1"
+  if command -v ss >/dev/null 2>&1; then
+    ss -ltn "( sport = :${port} )" 2>/dev/null || true
+    return 0
+  fi
+
+  lsof -iTCP:${port} -sTCP:LISTEN -n -P || true
+}
+
 usage() {
   cat <<'EOF'
 Usage:
@@ -36,10 +46,10 @@ status_cmd() {
   pgrep -af 'openclaw|run-node|gateway' || true
   echo
   echo "Production listener:"
-  lsof -iTCP:${OPENCLAW_PROD_PORT} -sTCP:LISTEN -n -P || true
+  show_listener "${OPENCLAW_PROD_PORT}"
   echo
   echo "Test listener:"
-  lsof -iTCP:${OPENCLAW_TEST_PORT} -sTCP:LISTEN -n -P || true
+  show_listener "${OPENCLAW_TEST_PORT}"
 }
 
 main() {
