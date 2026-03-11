@@ -9,11 +9,14 @@ All notable changes to this project will be documented in this file.
 - `bootstrap-openclaw-host.sh` for reusable host initialization
 - `setup-test-env.sh` for building and maintaining a test environment from an existing production OpenClaw setup
 - `DEPLOY-OPENCLAW-HOST.zh-CN.md` for server rollout guidance
+- `SERVER-ROLL-OUT-CHECKLIST.zh-CN.md` for operational rollout verification
+- `ROADMAP.md` for version-planning and next-stage control-plane evolution
 
 ### Changed
 
 - Project positioning expanded from standalone portal to reusable OpenClaw control plane
 - Config templates now include control-plane-oriented prod/test options
+- Documentation now covers host deployment and rollout acceptance workflow
 
 ## [v1.0.0] - 2026-03-11
 

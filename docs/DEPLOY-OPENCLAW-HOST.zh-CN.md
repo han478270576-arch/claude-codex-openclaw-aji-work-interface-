@@ -102,3 +102,8 @@ bash ./bin/openclawctl.sh rollback
 - 生产上线前必须先备份
 - secrets 不进入 Git，只放 `config/local.env`
 
+## 配套清单
+
+正式落地到一台新服务器时，建议同时使用：
+
+- `docs/SERVER-ROLL-OUT-CHECKLIST.zh-CN.md`

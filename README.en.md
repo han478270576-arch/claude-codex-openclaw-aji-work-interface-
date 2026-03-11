@@ -64,9 +64,11 @@ Then create your private machine-specific file:
 
 - Chinese install guide: `docs/INSTALL.zh-CN.md`
 - Chinese host deployment guide: `docs/DEPLOY-OPENCLAW-HOST.zh-CN.md`
+- Chinese server rollout checklist: `docs/SERVER-ROLL-OUT-CHECKLIST.zh-CN.md`
 - Chinese usage guide: `docs/USAGE.zh-CN.md`
 - Release notes: `RELEASE-v1.0.0.md`
 - Changelog: `CHANGELOG.md`
+- Roadmap: `ROADMAP.md`
 
 ## Current Status
 

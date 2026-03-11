@@ -56,6 +56,7 @@ bash ./scripts/install-launchers.sh
 
 - `docs/INSTALL.zh-CN.md`
 - `docs/DEPLOY-OPENCLAW-HOST.zh-CN.md`
+- `docs/SERVER-ROLL-OUT-CHECKLIST.zh-CN.md`
 
 ## 当前状态
 
@@ -65,4 +66,5 @@ bash ./scripts/install-launchers.sh
 
 - `README.en.md`
 - `CHANGELOG.md`
+- `ROADMAP.md`
 - `RELEASE-v1.0.0.md`
