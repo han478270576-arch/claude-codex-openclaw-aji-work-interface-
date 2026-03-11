@@ -1,6 +1,6 @@
-# claude-codex-openclaw 阿吉工作界面
+# claude-codex-openclaw 阿吉工作界面 / OpenClaw 控制平面
 
-这是一个独立项目版本的阿吉工作界面，用于统一管理：
+这是一个独立项目版本的阿吉工作界面，同时也是 OpenClaw 的控制平面仓库，用于统一管理：
 
 - OpenClaw
 - Claude Code
@@ -10,6 +10,7 @@
 
 - 从现有 OpenClaw 仓库中抽离
 - 形成可迁移的独立终端门户
+- 形成可跨服务器复用的 OpenClaw 控制平面
 - 保留双环境 OpenClaw 管理
 - 提供 Claude/Codex Session 统一入口
 
@@ -19,11 +20,18 @@
 - `config/` 默认配置和本地覆盖配置
 - `docs/` 使用说明
 - `lib/` 公共配置加载逻辑
+- `scripts/` 主机初始化与启动器安装
 
 ## 运行方式
 
 ```bash
 bash ./bin/claude-codex-openclaw.sh
+```
+
+## 主机初始化
+
+```bash
+bash ./scripts/bootstrap-openclaw-host.sh
 ```
 
 ## 安装启动器
@@ -47,6 +55,7 @@ bash ./scripts/install-launchers.sh
 更多安装和迁移说明见：
 
 - `docs/INSTALL.zh-CN.md`
+- `docs/DEPLOY-OPENCLAW-HOST.zh-CN.md`
 
 ## 当前状态
 

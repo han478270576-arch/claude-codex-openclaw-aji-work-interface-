@@ -1,12 +1,12 @@
-# claude-codex-openclaw Aji Work Interface
+# claude-codex-openclaw Aji Work Interface / OpenClaw Control Plane
 
-This project is a standalone terminal portal for managing:
+This project is both a standalone terminal portal and an OpenClaw control-plane repository for managing:
 
 - OpenClaw
 - Claude Code
 - Codex
 
-It was extracted from an existing OpenClaw workflow and refactored into an independent, portable repository so it can be reused across future `codex + claude + openclaw` setups.
+It was extracted from an existing OpenClaw workflow and refactored into an independent, portable repository so it can be reused across future `codex + claude + openclaw` setups and deployed to additional servers.
 
 ## Features
 
@@ -18,6 +18,7 @@ It was extracted from an existing OpenClaw workflow and refactored into an indep
 - Pagination for large session lists
 - Config-driven local deployment model
 - Windows/WSL launcher installer
+- Host bootstrap scripts for reusable prod/test setup
 
 ## Project Structure
 
@@ -41,6 +42,12 @@ Install Windows launchers:
 bash ./scripts/install-launchers.sh
 ```
 
+Bootstrap a new OpenClaw host:
+
+```bash
+bash ./scripts/bootstrap-openclaw-host.sh
+```
+
 ## Configuration
 
 Start from:
@@ -56,6 +63,7 @@ Then create your private machine-specific file:
 ## Documentation
 
 - Chinese install guide: `docs/INSTALL.zh-CN.md`
+- Chinese host deployment guide: `docs/DEPLOY-OPENCLAW-HOST.zh-CN.md`
 - Chinese usage guide: `docs/USAGE.zh-CN.md`
 - Release notes: `RELEASE-v1.0.0.md`
 - Changelog: `CHANGELOG.md`
@@ -63,4 +71,3 @@ Then create your private machine-specific file:
 ## Current Status
 
 `v1.0.0` is the first standalone release of the Aji work interface project.
-

@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- `bootstrap-openclaw-host.sh` for reusable host initialization
+- `setup-test-env.sh` for building and maintaining a test environment from an existing production OpenClaw setup
+- `DEPLOY-OPENCLAW-HOST.zh-CN.md` for server rollout guidance
+
+### Changed
+
+- Project positioning expanded from standalone portal to reusable OpenClaw control plane
+- Config templates now include control-plane-oriented prod/test options
+
 ## [v1.0.0] - 2026-03-11
 
 ### Added
@@ -40,4 +53,3 @@ All notable changes to this project will be documented in this file.
 
 - This release focuses on extraction, portability, and project independence.
 - Local machine secrets and runtime-only values are intentionally excluded from Git.
-
