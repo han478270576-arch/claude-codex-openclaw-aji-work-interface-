@@ -51,3 +51,9 @@ bash ./scripts/install-launchers.sh
 ## 当前状态
 
 这一版是从你当前已可用的界面抽离出的独立项目骨架，下一步可以直接初始化独立 Git 仓库并推送到新的 GitHub 仓库。
+
+## 附加文档
+
+- `README.en.md`
+- `CHANGELOG.md`
+- `RELEASE-v1.0.0.md`
