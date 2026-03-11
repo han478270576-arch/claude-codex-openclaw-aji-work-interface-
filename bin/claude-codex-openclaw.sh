@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+export TERM="${TERM:-xterm}"
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck disable=SC1091
 . "${SCRIPT_DIR}/../lib/config.sh"
@@ -296,6 +298,14 @@ render_primary_cards() {
   render_box_line "${YELLOW}${BOLD}"   "│ [3] CODEX                                                   │"
   render_box_line "${YELLOW}"          "│ Recent Sessions · All Sessions · Resume Last · New Session  │"
   render_box_line "${YELLOW}${BOLD}"   "└──────────────────────────────────────────────────────────────┘"
+}
+
+render_plain_primary_menu() {
+  center_color_line "${BOLD}${CYAN}" "主菜单"
+  center_line "1. OpenClaw"
+  center_line "2. Claude Code"
+  center_line "3. Codex"
+  center_line "0. Exit"
 }
 
 render_footer_glow() {
@@ -777,6 +787,8 @@ main_menu() {
     render_header_frame 4
     render_portal_status
     render_primary_cards
+    divider
+    render_plain_primary_menu
     divider
     center_color_line "${CYAN}${BOLD}" "快捷键入口"
     center_line "[1] OpenClaw        [2] Claude Code        [3] Codex        [0] Exit"
