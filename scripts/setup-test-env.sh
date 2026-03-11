@@ -87,7 +87,14 @@ generate_test_config() {
 
   require_file "${source_config}"
 
-  PROD_CONFIG="${source_config}" TEST_CONFIG="${target_config}" python3 <<'PY'
+  PROD_CONFIG="${source_config}" \
+  TEST_CONFIG="${target_config}" \
+  OPENCLAW_TEST_WORKSPACE="${OPENCLAW_TEST_WORKSPACE}" \
+  OPENCLAW_TEST_PORT="${OPENCLAW_TEST_PORT}" \
+  OPENCLAW_TEST_TOKEN="${OPENCLAW_TEST_TOKEN}" \
+  OPENCLAW_TEST_PROFILE="${OPENCLAW_TEST_PROFILE}" \
+  OPENCLAW_TEST_DISABLE_CHANNELS="${OPENCLAW_TEST_DISABLE_CHANNELS}" \
+  python3 <<'PY'
 import json
 import os
 from pathlib import Path
@@ -105,6 +112,10 @@ disable_channels = os.environ.get("OPENCLAW_TEST_DISABLE_CHANNELS", "true").lowe
 agents = data.setdefault("agents", {}).setdefault("defaults", {})
 agents["workspace"] = workspace
 
+meta = data.setdefault("meta", {})
+meta.pop("ajiControlPlaneManaged", None)
+meta.pop("ajiControlPlaneProfile", None)
+
 gateway = data.setdefault("gateway", {})
 gateway["port"] = test_port
 gateway.setdefault("auth", {})
@@ -120,10 +131,6 @@ if disable_channels:
     for key in ("telegram", "discord", "slack"):
         plugins.setdefault(key, {})
         plugins[key]["enabled"] = False
-
-meta = data.setdefault("meta", {})
-meta["ajiControlPlaneManaged"] = True
-meta["ajiControlPlaneProfile"] = test_profile
 
 test.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 PY
@@ -164,4 +171,3 @@ main() {
 }
 
 main "$@"
-
