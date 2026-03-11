@@ -252,11 +252,19 @@ play_intro() {
 }
 
 count_claude_sessions() {
-  find "${AJI_CLAUDE_SESSION_META_DIR}" -maxdepth 1 -type f 2>/dev/null | wc -l | tr -d ' '
+  if [ -d "${AJI_CLAUDE_SESSION_META_DIR}" ]; then
+    find "${AJI_CLAUDE_SESSION_META_DIR}" -maxdepth 1 -type f 2>/dev/null | wc -l | tr -d ' '
+  else
+    printf '0\n'
+  fi
 }
 
 count_codex_sessions() {
-  find "${AJI_CODEX_SESSIONS_DIR}" -type f 2>/dev/null | wc -l | tr -d ' '
+  if [ -d "${AJI_CODEX_SESSIONS_DIR}" ]; then
+    find "${AJI_CODEX_SESSIONS_DIR}" -type f 2>/dev/null | wc -l | tr -d ' '
+  else
+    printf '0\n'
+  fi
 }
 
 binary_state() {
@@ -378,6 +386,10 @@ run_codex() {
 list_claude_sessions() {
   local out_file="$1"
   local limit="${2:-20}"
+  if [ ! -d "${AJI_CLAUDE_SESSION_META_DIR}" ]; then
+    : > "${out_file}"
+    return
+  fi
   AJI_CLAUDE_META_DIR="${AJI_CLAUDE_SESSION_META_DIR}" python3 - "$out_file" "$limit" "${PORTAL_CWD}" <<'PY'
 import json, pathlib, sys
 import os
@@ -426,6 +438,10 @@ PY
 list_codex_sessions() {
   local out_file="$1"
   local limit="${2:-20}"
+  if [ ! -d "${AJI_CODEX_SESSIONS_DIR}" ]; then
+    : > "${out_file}"
+    return
+  fi
   AJI_CODEX_SESSIONS_DIR="${AJI_CODEX_SESSIONS_DIR}" python3 - "$out_file" "$limit" "${PORTAL_CWD}" <<'PY'
 import json, pathlib, sys
 import os
