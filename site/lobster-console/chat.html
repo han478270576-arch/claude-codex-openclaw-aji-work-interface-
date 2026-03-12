@@ -14,8 +14,8 @@
           <p class="eyebrow">LOBSTER CONSOLE · CHAT ROUTER</p>
           <h1 id="agentName">正在切换聊天会话</h1>
           <p id="agentLead" class="lead">
-            龙虾控制台正在把你带到选中 agent 的官方 Chat 会话。测试阶段直接跳转到官方 Chat，
-            避免 iframe 嵌入带来的浏览器限制。
+            龙虾控制台正在把你带到选中 agent 的固定主会话。每个 agent 都会复用自己的聊天记录，
+            测试阶段直接跳转到官方 Chat，避免 iframe 嵌入带来的浏览器限制。
           </p>
           <div class="chat-meta">
             <span id="agentBadge" class="detail-badge">Agent Session</span>
@@ -72,13 +72,13 @@
               <h2>点击即跳转</h2>
             </div>
             <p class="result-count">
-              测试阶段不再内嵌官方 Chat，而是把 agent 会话键和 token 拼好后直接跳过去。
+              这里不再内嵌官方 Chat，而是先写入该 agent 的固定主会话，再跳到官方 Chat。
             </p>
           </div>
 
           <div class="chat-jump-panel">
             <p class="jump-copy">
-              这一步会直接打开官方 Chat，并把当前会话切到该 agent 的主会话。
+              这一步会直接打开官方 Chat，并把当前会话切到该 agent 的固定主会话。
               如果浏览器没有自动跳转，点下面的按钮即可。
             </p>
             <a id="jumpButton" class="primary-button jump-button" href="/chat">

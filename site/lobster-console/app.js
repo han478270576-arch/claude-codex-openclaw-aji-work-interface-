@@ -89,6 +89,7 @@ function buildChatHref(agentId) {
   if (token) {
     query.set("token", token);
   }
+  query.set("mode", "continue");
   return `./chat.html?${query.toString()}`;
 }
 
@@ -202,9 +203,9 @@ function renderDetail(agent) {
   detailBadge.className = `detail-badge accent-${agent.accent}`;
   const chatHref = buildChatHref(agent.id);
   detailRoute.href = chatHref;
-  detailRoute.textContent = tokenPreview(chatHref);
+  detailRoute.textContent = `固定主会话 · agent:${agent.id}:main`;
   chatButton.href = chatHref;
-  chatButton.textContent = `进入 ${agent.handle} 聊天页`;
+  chatButton.textContent = `继续 ${agent.handle} 主会话`;
 
   detailSkills.innerHTML = "";
   agent.specialties.forEach((skill) => {

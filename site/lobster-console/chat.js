@@ -17,6 +17,7 @@ const jumpButton = document.querySelector("#jumpButton");
 const params = new URLSearchParams(window.location.search);
 const requestedAgentId = params.get("agent") || "aji-master";
 const explicitToken = params.get("token");
+const routeMode = params.get("mode") || "continue";
 
 const laneCopy = {
   orchestration: "主控与编排",
@@ -73,8 +74,10 @@ function primeOfficialChatSettings(sessionKey, token) {
   const next = {
     gatewayUrl: buildGatewayUrl(),
     token: token || "",
+    password: current.password || "",
     sessionKey,
     lastActiveSessionKey: sessionKey,
+    lastSessionRoute: `agent/${sessionKey}`,
     theme: current.theme || "system",
     chatFocusMode: Boolean(current.chatFocusMode),
     chatShowThinking: current.chatShowThinking !== false,
@@ -92,14 +95,23 @@ function primeOfficialChatSettings(sessionKey, token) {
   window.localStorage.setItem("openclaw.control.settings.v1", JSON.stringify(next));
 }
 
+function navigateToOfficialChat(chatUrl) {
+  if (window.top && window.top !== window) {
+    window.top.location.href = chatUrl;
+    return;
+  }
+
+  window.location.href = chatUrl;
+}
+
 function renderAgent(agent, sessionKey, chatUrl, token) {
   const lane = laneCopy[agent.lane] || agent.lane;
   const badgeText = `${agent.group === "core" ? "Core Lane" : "Team Lane"} · ${lane}`;
 
   agentName.textContent = `${agent.name} · 龙虾聊天壳`;
   agentLead.textContent =
-    `当前会话已锁定到 ${agent.handle}。你在这个页面里看的仍然是官方 OpenClaw Chat，` +
-    `但会话键已经切到 ${sessionKey}，因此聊天会直接落在该 agent 的主会话里。`;
+    `当前会话已锁定到 ${agent.handle}。龙虾控制台会把你直接送到这个 agent 的固定主会话，` +
+    `再次点击仍会回到 ${sessionKey}，以便持续沿用同一份聊天记录。`;
   agentBadge.textContent = badgeText;
   agentBadge.className = `detail-badge accent-${agent.accent}`;
 
@@ -120,7 +132,15 @@ function renderAgent(agent, sessionKey, chatUrl, token) {
   routeSessionNode.textContent = sessionKey;
   routeUrlNode.textContent = chatUrl;
   openFullChat.href = chatUrl;
+  openFullChat.target = "_top";
   jumpButton.href = chatUrl;
+  jumpButton.target = "_top";
+
+  if (routeMode === "continue") {
+    jumpButton.textContent = `继续 ${agent.handle} 主会话`;
+  } else {
+    jumpButton.textContent = "进入官方 Chat";
+  }
 }
 
 async function loadAgents() {
@@ -148,7 +168,7 @@ async function boot() {
     renderAgent(agent, sessionKey, chatUrl, token);
 
     if (!token) {
-      showWarning("当前页面没读到 token。测试环境现在已经放宽设备认证，但仍建议从带 token 的入口进入。");
+      showWarning("当前页面没读到 token。固定会话路由还在，但要成功进入官方 Chat，仍建议从带 token 的入口进入。");
       return;
     }
 
@@ -159,7 +179,7 @@ async function boot() {
     }
 
     window.setTimeout(() => {
-      window.location.href = chatUrl;
+      navigateToOfficialChat(chatUrl);
     }, 350);
   } catch (error) {
     showWarning(error instanceof Error ? error.message : String(error));
