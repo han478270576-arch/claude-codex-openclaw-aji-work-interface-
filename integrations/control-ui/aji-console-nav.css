@@ -1,0 +1,22 @@
+.nav-item--aji-console .nav-item__icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.nav-item--aji-console {
+  border-color: rgba(255, 107, 107, 0.12);
+}
+
+.nav-item--aji-console:hover {
+  border-color: rgba(255, 107, 107, 0.28);
+  background: linear-gradient(135deg, rgba(255, 107, 107, 0.12), rgba(46, 204, 180, 0.12));
+}
+
+.nav-item--aji-console .nav-item__text {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.nav-item--aji-console .aji-console-icon {
+  color: #ff6b6b;
+}
