@@ -14,11 +14,31 @@
 
     <canvas id="particles"></canvas>
 
+    <div class="portal-nav-shell">
+      <nav class="portal-nav" aria-label="Aji work interface navigation">
+        <a class="portal-brand" id="portal-home-link" href="../">
+          <span class="portal-brand-kicker">AJI WORK INTERFACE</span>
+          <strong>Skills Mission Deck</strong>
+        </a>
+        <div class="portal-links">
+          <a id="nav-agents-link" href="../lobster/">代理人控制台</a>
+          <a class="is-active" id="nav-skills-link" href="./">技能控制台</a>
+          <a id="nav-chat-link" href="../chat">官方 Chat</a>
+        </div>
+      </nav>
+      <div class="portal-banner" id="token-banner" hidden>
+        当前页面未检测到测试环境 token。列表浏览不受影响，但安装、启停和跳转官方 Chat 会受限。
+      </div>
+    </div>
+
     <div class="top-bar">
       <div class="top-bar-inner">
         <div class="top-title">
           <h1>OpenClaw Skills Neural Grid</h1>
-          <span class="version" id="skill-version"></span>
+          <div class="title-meta">
+            <span class="version" id="skill-version"></span>
+            <span class="env-badge" id="env-badge">TEST ENV</span>
+          </div>
         </div>
         <div class="search-box">
           <span class="search-icon">&#128269;</span>

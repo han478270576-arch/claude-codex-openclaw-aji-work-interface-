@@ -23,6 +23,41 @@ function getApiToken() {
   return params.get("token") || settings.token || "";
 }
 
+function persistControlSettings() {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get("token");
+  if (!token) return;
+
+  const current = readControlSettings();
+  const next = {
+    ...current,
+    token,
+    gatewayUrl: current.gatewayUrl || `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}`,
+    baseUrl: current.baseUrl || window.location.origin
+  };
+
+  window.localStorage.setItem("openclaw.control.settings.v1", JSON.stringify(next));
+}
+
+function buildUrl(path) {
+  const url = new URL(path, window.location.href);
+  const token = getApiToken();
+  if (token) {
+    url.searchParams.set("token", token);
+  }
+  return url.toString();
+}
+
+function initPortalNav() {
+  document.getElementById("portal-home-link").href = buildUrl("../");
+  document.getElementById("nav-agents-link").href = buildUrl("../lobster/");
+  document.getElementById("nav-skills-link").href = buildUrl("./");
+  document.getElementById("nav-chat-link").href = buildUrl("../chat");
+
+  const banner = document.getElementById("token-banner");
+  banner.hidden = Boolean(getApiToken());
+}
+
 const API_TOKEN = getApiToken();
 
 const ParticleEngine = (() => {
@@ -157,6 +192,11 @@ async function loadData() {
 }
 
 async function loadStatusMap() {
+  if (!API_TOKEN) {
+    SKILL_STATUS = {};
+    return;
+  }
+
   try {
     const data = await apiCall("/list");
     if (data.ok) {
@@ -299,7 +339,9 @@ function openDetail(id) {
 
 function renderActions(id, status, isProtected) {
   const actions = document.getElementById("detail-actions");
-  let html = "";
+  let html =
+    `<a class="act-btn route" href="${escapeHtml(buildUrl(`../lobster/`))}">🦞 Agents</a>` +
+    `<a class="act-btn route" href="${escapeHtml(buildUrl(`../chat?session=main`))}">💬 Chat</a>`;
 
   if (status === "available") {
     html += `<button class="act-btn install" data-action="install" data-id="${id}">&#128229; Install</button>`;
@@ -327,6 +369,11 @@ function renderActions(id, status, isProtected) {
 }
 
 async function handleAction(action, id, button) {
+  if (!API_TOKEN) {
+    showToast("Missing test token. Open the page with ?token=... before managing skills.", "error");
+    return;
+  }
+
   if (action === "uninstall") {
     const ok = await showConfirm("Uninstall Skill", `Are you sure you want to uninstall "${id}"? This will remove all skill files.`);
     if (!ok) return;
@@ -396,6 +443,8 @@ function wireDialogs() {
 }
 
 async function boot() {
+  persistControlSettings();
+  initPortalNav();
   ParticleEngine.init();
   await Promise.all([loadData(), loadStatusMap()]);
 
