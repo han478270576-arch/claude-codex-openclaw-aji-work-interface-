@@ -53,3 +53,16 @@ bash ./bin/openclawctl.sh rollback
 - 项目本体保持一致
 - 每台服务器只改 `config/local.env`
 - 每台服务器都按相同 bootstrap 步骤部署
+
+## 服务器仓库边界
+
+- 本地 WSL 相关内容与服务器内容分仓维护
+- 服务器 OpenClaw 业务仓库应使用：`git@github.com:han478270576-arch/-openclaw-workspace.git`
+- 控制平面项目继续使用独立仓库：`claude-codex-openclaw-aji-work-interface-`
+- 不要把服务器运行记忆、认证 runbook、生产/测试对齐记录推到本地 WSL 仓库
+
+## 服务器工作区忽略原则
+
+- 生产环境的自学习输出、知识图谱、报告输出应优先 `.gitignore`
+- 测试环境的 `/.clawhub/` 和 `/canvas/` 视为运行态/部署副本，不反向纳入业务仓库
+- 真正需要版本控制的 UI、门户、skills、Control UI 注入脚本，继续进入控制平面仓库
