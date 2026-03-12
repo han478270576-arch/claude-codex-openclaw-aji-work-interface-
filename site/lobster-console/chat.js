@@ -12,7 +12,7 @@ const routeSessionNode = document.querySelector("#routeSession");
 const routeUrlNode = document.querySelector("#routeUrl");
 const warningBox = document.querySelector("#warningBox");
 const openFullChat = document.querySelector("#openFullChat");
-const chatFrame = document.querySelector("#chatFrame");
+const jumpButton = document.querySelector("#jumpButton");
 
 const params = new URLSearchParams(window.location.search);
 const requestedAgentId = params.get("agent") || "aji-master";
@@ -91,7 +91,7 @@ function renderAgent(agent, sessionKey, chatUrl, token) {
   routeSessionNode.textContent = sessionKey;
   routeUrlNode.textContent = chatUrl;
   openFullChat.href = chatUrl;
-  chatFrame.src = chatUrl;
+  jumpButton.href = chatUrl;
 }
 
 async function loadAgents() {
@@ -118,19 +118,18 @@ async function boot() {
 
     renderAgent(agent, sessionKey, chatUrl, token);
 
-    if (!hasPairedDevice()) {
-      showWarning("当前浏览器还没有配对设备身份。先去标准 Control UI 配对一次，再回到龙虾控制台聊天页。");
-      return;
-    }
-
-    if (!hasDeviceAuthToken()) {
-      showWarning("当前浏览器缺少设备认证票据。请先打开一次标准 Control UI，并完成设备配对。");
-      return;
-    }
-
     if (!token) {
-      showWarning("当前页面没读到 token。你可以从带 token 的测试环境入口进入，或先打开一次标准 Control UI。");
+      showWarning("当前页面没读到 token。测试环境现在已经放宽设备认证，但仍建议从带 token 的入口进入。");
+      return;
     }
+
+    if (!hasPairedDevice() || !hasDeviceAuthToken()) {
+      showWarning("测试环境已放宽设备认证，当前将直接跳转到官方 Chat。生产环境仍建议保留配对。");
+    }
+
+    window.setTimeout(() => {
+      window.location.href = chatUrl;
+    }, 350);
   } catch (error) {
     showWarning(error instanceof Error ? error.message : String(error));
     agentName.textContent = "Agent Chat Unavailable";

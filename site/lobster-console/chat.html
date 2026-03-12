@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>龙虾控制台 · Agent Chat</title>
+    <title>龙虾控制台 · Agent Chat Route</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
@@ -11,11 +11,11 @@
     <main class="chat-shell">
       <section class="chat-hero">
         <div class="chat-hero-copy">
-          <p class="eyebrow">LOBSTER CONSOLE · PHASE 2</p>
-          <h1 id="agentName">Agent Chat</h1>
+          <p class="eyebrow">LOBSTER CONSOLE · CHAT ROUTER</p>
+          <h1 id="agentName">正在切换聊天会话</h1>
           <p id="agentLead" class="lead">
-            正在为选中的 agent 装配专属聊天通道。底层会话仍然复用 OpenClaw 官方 Chat，
-            外层则由龙虾控制台负责代理人上下文、入口和切换体验。
+            龙虾控制台正在把你带到选中 agent 的官方 Chat 会话。测试阶段直接跳转到官方 Chat，
+            避免 iframe 嵌入带来的浏览器限制。
           </p>
           <div class="chat-meta">
             <span id="agentBadge" class="detail-badge">Agent Session</span>
@@ -26,8 +26,8 @@
 
         <div class="chat-hero-actions">
           <a class="ghost-link" href="./index.html">返回龙虾控制台</a>
-          <a id="openFullChat" class="primary-button" href="/chat" target="_blank" rel="noreferrer">
-            全屏打开官方 Chat
+          <a id="openFullChat" class="primary-button" href="/chat">
+            立即进入官方 Chat
           </a>
         </div>
       </section>
@@ -41,7 +41,7 @@
             <h2 id="agentTitle">加载中</h2>
             <p id="agentHandle" class="detail-subtitle">正在读取 agent 注册信息</p>
             <p id="agentSummary" class="side-copy">
-              这里会显示当前 agent 的职责摘要和进入当前会话的方式。
+              这里会显示当前 agent 的职责摘要和即将进入的会话。
             </p>
             <ul id="agentSkills" class="skill-list"></ul>
           </div>
@@ -68,22 +68,22 @@
         <section class="chat-main">
           <div class="chat-frame-head">
             <div>
-              <p class="section-kicker">EMBEDDED CHAT</p>
-              <h2>官方 Chat 会话壳</h2>
+              <p class="section-kicker">OFFICIAL CHAT ROUTE</p>
+              <h2>点击即跳转</h2>
             </div>
             <p class="result-count">
-              当前页负责代理人选择和会话路由，实际消息交互由内嵌的 OpenClaw Chat 完成。
+              测试阶段不再内嵌官方 Chat，而是把 agent 会话键和 token 拼好后直接跳过去。
             </p>
           </div>
 
-          <div class="chat-frame-wrap">
-            <iframe
-              id="chatFrame"
-              class="chat-frame"
-              title="OpenClaw Agent Chat"
-              loading="eager"
-              referrerpolicy="same-origin"
-            ></iframe>
+          <div class="chat-jump-panel">
+            <p class="jump-copy">
+              这一步会直接打开官方 Chat，并把当前会话切到该 agent 的主会话。
+              如果浏览器没有自动跳转，点下面的按钮即可。
+            </p>
+            <a id="jumpButton" class="primary-button jump-button" href="/chat">
+              进入官方 Chat
+            </a>
           </div>
         </section>
       </section>

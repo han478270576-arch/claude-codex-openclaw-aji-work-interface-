@@ -53,8 +53,9 @@
 
 - `/lobster/chat.html?agent=<agent-id>`
 - 上层保留龙虾控制台自己的 agent 信息和路由层
-- 下层直接嵌入官方 `/chat?session=agent:<agent-id>:main`
-- 同时复用浏览器里已经完成配对的设备身份与 token
+- 测试阶段直接跳转到官方 `/chat?session=agent:<agent-id>:main`
+- 避免 iframe 嵌入的浏览器限制
+- 测试环境可单独放宽 `gateway.controlUi` 认证，生产环境保持严格
 
 后续再决定是否下探到自定义 WebSocket 客户端。
 
