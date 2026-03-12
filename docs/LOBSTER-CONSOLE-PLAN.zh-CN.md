@@ -47,11 +47,16 @@
 
 ## Phase 2 方向
 
-下一阶段接入：
+第二阶段先交付一版可用聊天壳，而不是重复造官方 Chat 协议。
 
-- `/lobster/chat/<agent-id>` 或 `/lobster/chat?agent=<agent-id>`
-- 单 agent 聊天壳
-- 与 OpenClaw gateway 的会话桥接
+当前实现方向：
+
+- `/lobster/chat.html?agent=<agent-id>`
+- 上层保留龙虾控制台自己的 agent 信息和路由层
+- 下层直接嵌入官方 `/chat?session=agent:<agent-id>:main`
+- 同时复用浏览器里已经完成配对的设备身份与 token
+
+后续再决定是否下探到自定义 WebSocket 客户端。
 
 ## 原则
 

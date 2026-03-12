@@ -3,102 +3,92 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>龙虾控制台 · Chat Placeholder</title>
+    <title>龙虾控制台 · Agent Chat</title>
     <link rel="stylesheet" href="./styles.css" />
-    <style>
-      .chat-shell {
-        width: min(1120px, calc(100vw - 32px));
-        margin: 0 auto;
-        padding: 28px 0 40px;
-      }
-
-      .chat-panel {
-        border: 1px solid var(--line);
-        border-radius: var(--radius-lg);
-        background: linear-gradient(180deg, rgba(7, 20, 35, 0.9), rgba(4, 12, 22, 0.92));
-        box-shadow: var(--shadow);
-        padding: 28px;
-      }
-
-      .chat-top {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-        gap: 14px;
-      }
-
-      .chat-top h1 {
-        margin: 10px 0 0;
-        font-size: clamp(30px, 4vw, 54px);
-      }
-
-      .chat-copy {
-        margin: 18px 0 0;
-        max-width: 760px;
-        color: var(--muted);
-        line-height: 1.8;
-      }
-
-      .route-box,
-      .next-box {
-        margin-top: 20px;
-        padding: 18px;
-        border-radius: 18px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        background: rgba(255, 255, 255, 0.03);
-      }
-
-      .route-box code {
-        color: var(--cyan);
-      }
-
-      .next-box ul {
-        margin: 10px 0 0;
-        padding-left: 18px;
-        color: var(--muted);
-      }
-    </style>
   </head>
   <body>
     <div class="noise" aria-hidden="true"></div>
     <main class="chat-shell">
-      <section class="chat-panel">
-        <div class="chat-top">
-          <div>
-            <p class="eyebrow">LOBSTER CONSOLE · CHAT PLACEHOLDER</p>
-            <h1 id="agentName">Agent Chat</h1>
+      <section class="chat-hero">
+        <div class="chat-hero-copy">
+          <p class="eyebrow">LOBSTER CONSOLE · PHASE 2</p>
+          <h1 id="agentName">Agent Chat</h1>
+          <p id="agentLead" class="lead">
+            正在为选中的 agent 装配专属聊天通道。底层会话仍然复用 OpenClaw 官方 Chat，
+            外层则由龙虾控制台负责代理人上下文、入口和切换体验。
+          </p>
+          <div class="chat-meta">
+            <span id="agentBadge" class="detail-badge">Agent Session</span>
+            <span id="sessionKey" class="meta-chip">session: loading</span>
+            <span id="tokenState" class="meta-chip">token: checking</span>
           </div>
-          <a class="ghost-link" href="./index.html">返回控制台</a>
         </div>
 
-        <p id="chatLead" class="chat-copy">
-          这里是 Phase 2 预留的单 agent 聊天壳入口。当前先验证路由、入口和 agent 选择链路，不直接接 OpenClaw 网关会话。
-        </p>
-
-        <div class="route-box">
-          <strong>当前路由：</strong>
-          <code id="routePreview">/lobster/chat.html?agent=unknown</code>
+        <div class="chat-hero-actions">
+          <a class="ghost-link" href="./index.html">返回龙虾控制台</a>
+          <a id="openFullChat" class="primary-button" href="/chat" target="_blank" rel="noreferrer">
+            全屏打开官方 Chat
+          </a>
         </div>
+      </section>
 
-        <div class="next-box">
-          <strong>Phase 2 下一步</strong>
-          <ul>
-            <li>把当前 agent 的身份上下文注入聊天页。</li>
-            <li>接入网关会话，形成单 agent 会话壳。</li>
-            <li>支持会话历史、快捷提示词和 Agent 切换。</li>
-          </ul>
-        </div>
+      <section id="warningBox" class="chat-warning" hidden></section>
+
+      <section class="chat-layout">
+        <aside class="chat-side">
+          <div class="chat-card">
+            <p class="section-kicker">AGENT PROFILE</p>
+            <h2 id="agentTitle">加载中</h2>
+            <p id="agentHandle" class="detail-subtitle">正在读取 agent 注册信息</p>
+            <p id="agentSummary" class="side-copy">
+              这里会显示当前 agent 的职责摘要和进入当前会话的方式。
+            </p>
+            <ul id="agentSkills" class="skill-list"></ul>
+          </div>
+
+          <div class="chat-card">
+            <p class="section-kicker">SESSION ROUTING</p>
+            <dl class="route-list">
+              <div>
+                <dt>Agent</dt>
+                <dd id="routeAgent">-</dd>
+              </div>
+              <div>
+                <dt>Session Key</dt>
+                <dd id="routeSession">-</dd>
+              </div>
+              <div>
+                <dt>Chat URL</dt>
+                <dd><code id="routeUrl">/chat</code></dd>
+              </div>
+            </dl>
+          </div>
+        </aside>
+
+        <section class="chat-main">
+          <div class="chat-frame-head">
+            <div>
+              <p class="section-kicker">EMBEDDED CHAT</p>
+              <h2>官方 Chat 会话壳</h2>
+            </div>
+            <p class="result-count">
+              当前页负责代理人选择和会话路由，实际消息交互由内嵌的 OpenClaw Chat 完成。
+            </p>
+          </div>
+
+          <div class="chat-frame-wrap">
+            <iframe
+              id="chatFrame"
+              class="chat-frame"
+              title="OpenClaw Agent Chat"
+              loading="eager"
+              referrerpolicy="same-origin"
+            ></iframe>
+          </div>
+        </section>
       </section>
     </main>
 
-    <script>
-      const params = new URLSearchParams(window.location.search);
-      const agent = params.get("agent") || "unknown";
-      document.querySelector("#agentName").textContent = `${agent} · 聊天页占位`;
-      document.querySelector("#routePreview").textContent = `/lobster/chat.html?agent=${agent}`;
-      document.querySelector("#chatLead").textContent =
-        `当前已选择 ${agent}。这一页先作为二阶段单 agent 聊天界面的占位入口，用来确认跳转链路和信息结构。`;
-    </script>
+    <script src="./chat.js" defer></script>
   </body>
 </html>
