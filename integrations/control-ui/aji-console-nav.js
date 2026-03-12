@@ -39,6 +39,58 @@
     return url.searchParams.get("token") || settings.token || "";
   }
 
+  function readRuntimeSettings(app) {
+    const candidates = [
+      app && app.settings,
+      app && app.connection,
+      app && app.connectionState,
+      app && app.connectionForm,
+      app && app.gatewaySettings,
+      app && app.gatewayAccess
+    ];
+
+    for (const value of candidates) {
+      if (!value || typeof value !== "object") continue;
+      const token =
+        typeof value.token === "string" && value.token.trim()
+          ? value.token.trim()
+          : "";
+      const password =
+        typeof value.password === "string" && value.password.trim()
+          ? value.password.trim()
+          : "";
+      const gatewayUrl =
+        typeof value.gatewayUrl === "string" && value.gatewayUrl.trim()
+          ? value.gatewayUrl.trim()
+          : "";
+      const sessionKey =
+        typeof value.lastActiveSessionKey === "string" && value.lastActiveSessionKey.trim()
+          ? value.lastActiveSessionKey.trim()
+          : typeof value.sessionKey === "string" && value.sessionKey.trim()
+            ? value.sessionKey.trim()
+            : "";
+
+      if (token || password || gatewayUrl || sessionKey) {
+        return { token, password, gatewayUrl, sessionKey };
+      }
+    }
+
+    return { token: "", password: "", gatewayUrl: "", sessionKey: "" };
+  }
+
+  function getAuthContext(app) {
+    const saved = readControlSettings();
+    const runtime = readRuntimeSettings(app);
+    const url = new URL(window.location.href);
+    const urlToken = url.searchParams.get("token") || "";
+    const token = urlToken || runtime.token || saved.token || "";
+    const password = runtime.password || saved.password || "";
+    const gatewayUrl = runtime.gatewayUrl || saved.gatewayUrl || "";
+    const sessionKey = runtime.sessionKey || saved.lastActiveSessionKey || saved.sessionKey || "main";
+    const ready = Boolean(token || password || (app && app.connected));
+    return { token, password, gatewayUrl, sessionKey, ready };
+  }
+
   function getSection() {
     const url = new URL(window.location.href);
     const section = url.searchParams.get(SECTION_PARAM);
@@ -62,12 +114,12 @@
     window.history[replace ? "replaceState" : "pushState"]({}, "", url.toString());
   }
 
-  function buildIframeUrl(section) {
+  function buildIframeUrl(section, app) {
     const config = SECTION_CONFIG[section] || SECTION_CONFIG[DEFAULT_SECTION];
     const url = new URL(config.iframePath, window.location.origin);
-    const token = getToken();
-    if (token) {
-      url.searchParams.set("token", token);
+    const auth = getAuthContext(app);
+    if (auth.token) {
+      url.searchParams.set("token", auth.token);
     }
     return url.toString();
   }
@@ -151,7 +203,7 @@
     }
 
     nav.classList.toggle("active", isConsoleView());
-    nav.setAttribute("href", buildIframeUrl(getSection()));
+    nav.setAttribute("href", buildIframeUrl(getSection(), app));
     nav.setAttribute("title", "进入阿吉控制台");
     return nav;
   }
@@ -169,11 +221,12 @@
     return panel;
   }
 
-  function renderPanel(section) {
+  function renderPanel(section, app) {
     const config = SECTION_CONFIG[section] || SECTION_CONFIG[DEFAULT_SECTION];
-    const tokenHint = getToken()
-      ? '<span class="aji-console-chip"><strong>已带 token</strong><span>统一门户将沿用当前测试环境认证</span></span>'
-      : '<span class="aji-console-chip aji-console-chip--warn"><strong>未检测到 token</strong><span>门户能打开，但聊天和技能动作可能受限</span></span>';
+    const auth = getAuthContext(app);
+    const tokenHint = auth.ready
+      ? '<span class="aji-console-chip"><strong>已继承当前控制台认证</strong><span>统一门户将沿用当前测试环境连接设置</span></span>'
+      : '<span class="aji-console-chip aji-console-chip--warn"><strong>未检测到认证上下文</strong><span>门户可以打开，但聊天和技能动作可能受限</span></span>';
 
     const tabs = Object.entries(SECTION_CONFIG).map(function ([id, item]) {
       const active = id === section ? " is-active" : "";
@@ -200,10 +253,10 @@
       '<div class="aji-console-tabs" role="tablist" aria-label="Aji console sections">' + tabs + "</div>" +
       '<div class="aji-console-frame-head">' +
       '<div><h3>' + config.title + '</h3><p>' + config.subtitle + '</p></div>' +
-      '<a class="aji-console-open" href="' + buildIframeUrl(section) + '" target="_blank" rel="noreferrer">新窗口打开</a>' +
+      '<a class="aji-console-open" href="' + buildIframeUrl(section, app) + '" target="_blank" rel="noreferrer">新窗口打开</a>' +
       "</div>" +
       '<div class="aji-console-frame-wrap">' +
-      '<iframe class="aji-console-frame" src="' + buildIframeUrl(section) + '" title="Aji Console ' + config.label + '" loading="lazy"></iframe>' +
+      '<iframe class="aji-console-frame" src="' + buildIframeUrl(section, app) + '" title="Aji Console ' + config.label + '" loading="lazy"></iframe>' +
       "</div>" +
       "</div>"
     );
@@ -250,7 +303,19 @@
     if (!active) return;
 
     syncHeader(app, true);
-    panel.innerHTML = renderPanel(getSection());
+    const section = getSection();
+    const auth = getAuthContext(app);
+    const renderKey = JSON.stringify({
+      section,
+      token: auth.token ? "token" : "",
+      password: auth.password ? "password" : "",
+      connected: Boolean(app && app.connected)
+    });
+
+    if (panel.__ajiConsoleRenderKey !== renderKey) {
+      panel.__ajiConsoleRenderKey = renderKey;
+      panel.innerHTML = renderPanel(section, app);
+    }
     bindPanelEvents(app, panel);
   }
 
