@@ -16,6 +16,7 @@ const chatButton = document.querySelector("#chatButton");
 let registry = [];
 let currentFilter = "all";
 let selectedId = null;
+const params = new URLSearchParams(window.location.search);
 
 const laneCopy = {
   orchestration: "主控与编排",
@@ -32,6 +33,29 @@ const stateCopy = {
   ready: "Core Ready",
   "team-ready": "Team Ready"
 };
+
+function readControlSettings() {
+  try {
+    const raw = window.localStorage.getItem("openclaw.control.settings.v1");
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function getEffectiveToken() {
+  const settings = readControlSettings();
+  return params.get("token") || settings.token || "";
+}
+
+function buildChatHref(agentId) {
+  const query = new URLSearchParams({ agent: agentId });
+  const token = getEffectiveToken();
+  if (token) {
+    query.set("token", token);
+  }
+  return `./chat.html?${query.toString()}`;
+}
 
 async function loadRegistry() {
   const response = await fetch("./agents.json", { cache: "no-store" });
@@ -141,11 +165,11 @@ function renderDetail(agent) {
   detailSource.textContent = agent.promptSource;
   detailBadge.textContent = `${agent.group === "core" ? "Core Lane" : "Team Lane"} · ${stateCopy[agent.state] || agent.state}`;
   detailBadge.className = `detail-badge accent-${agent.accent}`;
-  const chatHref = `./chat.html?agent=${encodeURIComponent(agent.id)}`;
+  const chatHref = buildChatHref(agent.id);
   detailRoute.href = chatHref;
-  detailRoute.textContent = `预览 Phase 2 路由 /chat?agent=${agent.id}`;
+  detailRoute.textContent = tokenPreview(chatHref);
   chatButton.href = chatHref;
-  chatButton.textContent = `进入 ${agent.handle} 聊天页占位`;
+  chatButton.textContent = `进入 ${agent.handle} 聊天页`;
 
   detailSkills.innerHTML = "";
   agent.specialties.forEach((skill) => {
@@ -164,6 +188,12 @@ filterChips.forEach((chip) => {
 });
 
 searchInput.addEventListener("input", render);
+
+function tokenPreview(href) {
+  return href.includes("&token=")
+    ? `已附带 token · ${href.replace(/([?&]token=)[^&]+/, "$1***")}`
+    : `未检测到 token · ${href}`;
+}
 
 loadRegistry().catch((error) => {
   resultCount.textContent = "registry load failed";
