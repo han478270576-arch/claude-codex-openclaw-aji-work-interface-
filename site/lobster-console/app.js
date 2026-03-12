@@ -43,9 +43,44 @@ function readControlSettings() {
   }
 }
 
+function persistControlSettings() {
+  const token = params.get("token");
+  if (!token) return;
+
+  const current = readControlSettings();
+  const next = {
+    ...current,
+    token,
+    gatewayUrl: current.gatewayUrl || `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}`,
+    baseUrl: current.baseUrl || window.location.origin
+  };
+
+  window.localStorage.setItem("openclaw.control.settings.v1", JSON.stringify(next));
+}
+
 function getEffectiveToken() {
   const settings = readControlSettings();
   return params.get("token") || settings.token || "";
+}
+
+function buildPortalUrl(path) {
+  const url = new URL(path, window.location.href);
+  const token = getEffectiveToken();
+  if (token) {
+    url.searchParams.set("token", token);
+  }
+  return url.toString();
+}
+
+function initPortalNav() {
+  document.querySelector("#portal-home-link").href = buildPortalUrl("./");
+  document.querySelector("#nav-agents-link").href = buildPortalUrl("./");
+  document.querySelector("#nav-skills-link").href = buildPortalUrl("./skills/");
+  document.querySelector("#nav-chat-link").href = buildPortalUrl("../chat?session=main");
+  document.querySelector("#moduleAgentsLink").href = buildPortalUrl("./");
+  document.querySelector("#moduleSkillsLink").href = buildPortalUrl("./skills/");
+  document.querySelector("#moduleChatLink").href = buildPortalUrl("../chat?session=main");
+  document.querySelector("#token-banner").hidden = Boolean(getEffectiveToken());
 }
 
 function buildChatHref(agentId) {
@@ -194,6 +229,9 @@ function tokenPreview(href) {
     ? `已附带 token · ${href.replace(/([?&]token=)[^&]+/, "$1***")}`
     : `未检测到 token · ${href}`;
 }
+
+persistControlSettings();
+initPortalNav();
 
 loadRegistry().catch((error) => {
   resultCount.textContent = "registry load failed";

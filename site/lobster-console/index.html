@@ -9,6 +9,23 @@
   <body>
     <div class="noise" aria-hidden="true"></div>
     <main class="shell">
+      <div class="portal-nav-shell">
+        <nav class="portal-nav" aria-label="Aji work interface navigation">
+          <a class="portal-brand" id="portal-home-link" href="./">
+            <span class="portal-brand-kicker">AJI WORK INTERFACE</span>
+            <strong>Lobster Command Deck</strong>
+          </a>
+          <div class="portal-links">
+            <a class="is-active" id="nav-agents-link" href="./">代理人控制台</a>
+            <a id="nav-skills-link" href="./skills/">技能控制台</a>
+            <a id="nav-chat-link" href="../chat">官方 Chat</a>
+          </div>
+        </nav>
+        <div class="portal-banner" id="token-banner" hidden>
+          当前页面未检测到测试环境 token。代理人浏览不受影响，但跳转聊天和官方 Chat 会受限。
+        </div>
+      </div>
+
       <header class="hero">
         <div class="hero-copy">
           <p class="eyebrow">LOBSTER CONSOLE · PHASE 1</p>
@@ -44,6 +61,24 @@
           </pre>
         </aside>
       </header>
+
+      <section class="module-strip" aria-label="工作台模块入口">
+        <a class="module-card accent-cyan" id="moduleAgentsLink" href="./">
+          <span class="module-kicker">ACTIVE DECK</span>
+          <strong>Agents Registry</strong>
+          <p>浏览核心分身和团队 Agent，进入各自聊天链路。</p>
+        </a>
+        <a class="module-card accent-gold" id="moduleSkillsLink" href="./skills/">
+          <span class="module-kicker">NEW INTEGRATION</span>
+          <strong>Skills Mission Deck</strong>
+          <p>在统一门户里查看、搜索并管理技能状态。</p>
+        </a>
+        <a class="module-card accent-magenta" id="moduleChatLink" href="../chat">
+          <span class="module-kicker">DIRECT ROUTE</span>
+          <strong>Official Chat</strong>
+          <p>直接跳到标准 Chat，会话继续走测试环境网关。</p>
+        </a>
+      </section>
 
       <section class="toolbar" aria-label="代理人筛选">
         <label class="search">

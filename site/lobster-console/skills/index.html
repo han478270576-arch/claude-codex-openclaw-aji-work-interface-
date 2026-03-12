@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>龙虾控制台 · Skills Mission Deck</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div id="loading-overlay">
+      <div class="loader-ring"></div>
+      <div class="loader-text">INITIALIZING NEURAL GRID</div>
+    </div>
+
+    <canvas id="particles"></canvas>
+
+    <div class="portal-nav-shell">
+      <nav class="portal-nav" aria-label="Aji work interface navigation">
+        <a class="portal-brand" id="portal-home-link" href="../">
+          <span class="portal-brand-kicker">AJI WORK INTERFACE</span>
+          <strong>Skills Mission Deck</strong>
+        </a>
+        <div class="portal-links">
+          <a id="nav-agents-link" href="../">代理人控制台</a>
+          <a class="is-active" id="nav-skills-link" href="./">技能控制台</a>
+          <a id="nav-chat-link" href="../../chat">官方 Chat</a>
+        </div>
+      </nav>
+      <div class="portal-banner" id="token-banner" hidden>
+        当前页面未检测到测试环境 token。列表浏览不受影响，但安装、启停和跳转官方 Chat 会受限。
+      </div>
+    </div>
+
+    <div class="top-bar">
+      <div class="top-bar-inner">
+        <div class="top-title">
+          <h1>龙虾控制台 · Skills Mission Deck</h1>
+          <div class="title-meta">
+            <span class="version" id="skill-version"></span>
+            <span class="env-badge" id="env-badge">TEST ENV</span>
+          </div>
+        </div>
+        <div class="search-box">
+          <span class="search-icon">&#128269;</span>
+          <input type="text" id="search-input" placeholder="Search skills..." autocomplete="off" />
+        </div>
+        <div class="cat-tabs" id="cat-tabs"></div>
+      </div>
+    </div>
+
+    <div class="grid-container">
+      <div class="hex-grid" id="hex-grid"></div>
+    </div>
+
+    <div class="detail-overlay" id="detail-overlay">
+      <div class="detail-panel" id="detail-panel">
+        <div class="detail-header">
+          <div class="detail-emoji" id="detail-emoji"></div>
+          <div class="detail-title-area">
+            <div class="detail-title" id="detail-title"></div>
+            <div class="detail-meta" id="detail-meta"></div>
+          </div>
+          <button class="detail-close" id="detail-close">&times;</button>
+        </div>
+        <div class="detail-body" id="detail-body"></div>
+        <div class="detail-actions" id="detail-actions"></div>
+      </div>
+    </div>
+
+    <div class="confirm-overlay" id="confirm-overlay">
+      <div class="confirm-box">
+        <h3 id="confirm-title">Confirm</h3>
+        <p id="confirm-msg"></p>
+        <div class="confirm-btns">
+          <button class="confirm-cancel" id="confirm-cancel">Cancel</button>
+          <button class="confirm-yes" id="confirm-yes">Confirm</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <div class="status-bar">
+      <div class="status-item"><div class="status-dot"></div><span id="st-skills">0 Skills</span></div>
+      <div class="status-item"><span id="st-cats">0 Categories</span></div>
+      <div class="status-item"><span id="st-particles">0 Particles</span></div>
+      <div class="status-item"><span id="st-fps">60 FPS</span></div>
+    </div>
+
+    <script src="./app.js" defer></script>
+  </body>
+</html>
