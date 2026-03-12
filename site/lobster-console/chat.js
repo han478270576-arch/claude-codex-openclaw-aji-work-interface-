@@ -63,6 +63,35 @@ function buildChatUrl(sessionKey, token) {
   return `/chat?${query.toString()}`;
 }
 
+function buildGatewayUrl() {
+  const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+  return `${protocol}//${window.location.host}`;
+}
+
+function primeOfficialChatSettings(sessionKey, token) {
+  const current = readControlSettings();
+  const next = {
+    gatewayUrl: buildGatewayUrl(),
+    token: token || "",
+    sessionKey,
+    lastActiveSessionKey: sessionKey,
+    theme: current.theme || "system",
+    chatFocusMode: Boolean(current.chatFocusMode),
+    chatShowThinking: current.chatShowThinking !== false,
+    splitRatio:
+      typeof current.splitRatio === "number" && current.splitRatio >= 0.4 && current.splitRatio <= 0.7
+        ? current.splitRatio
+        : 0.6,
+    navCollapsed: Boolean(current.navCollapsed),
+    navGroupsCollapsed:
+      current.navGroupsCollapsed && typeof current.navGroupsCollapsed === "object"
+        ? current.navGroupsCollapsed
+        : {}
+  };
+
+  window.localStorage.setItem("openclaw.control.settings.v1", JSON.stringify(next));
+}
+
 function renderAgent(agent, sessionKey, chatUrl, token) {
   const lane = laneCopy[agent.lane] || agent.lane;
   const badgeText = `${agent.group === "core" ? "Core Lane" : "Team Lane"} · ${lane}`;
@@ -122,6 +151,8 @@ async function boot() {
       showWarning("当前页面没读到 token。测试环境现在已经放宽设备认证，但仍建议从带 token 的入口进入。");
       return;
     }
+
+    primeOfficialChatSettings(sessionKey, token);
 
     if (!hasPairedDevice() || !hasDeviceAuthToken()) {
       showWarning("测试环境已放宽设备认证，当前将直接跳转到官方 Chat。生产环境仍建议保留配对。");
