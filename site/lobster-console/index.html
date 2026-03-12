@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>龙虾控制台 · Agent Registry</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="noise" aria-hidden="true"></div>
+    <main class="shell">
+      <header class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">LOBSTER CONSOLE · PHASE 1</p>
+          <h1>阿吉代理人总控台</h1>
+          <p class="lead">
+            这一版只做一件事：把当前 OpenClaw 体系里的核心 agent 和团队 agent 集中可视化，
+            让测试环境先形成一个可浏览、可筛选、可点击的代理人控制台。
+          </p>
+          <div class="hero-metrics">
+            <div class="metric">
+              <span class="metric-k">8</span>
+              <span class="metric-v">已登记 Agent</span>
+            </div>
+            <div class="metric">
+              <span class="metric-k">2</span>
+              <span class="metric-v">核心分组</span>
+            </div>
+            <div class="metric">
+              <span class="metric-k">P1</span>
+              <span class="metric-v">列表与选择</span>
+            </div>
+          </div>
+        </div>
+        <aside class="hero-art" aria-hidden="true">
+          <pre>
+      __     __     __
+  ___/ /___ / /__ _/ /____  _____
+ / _  / __ `/ / _ `/ __/ _ \/ ___/
+/  __/ /_/ / / /_/ / /_/  __/ /
+\___/\__,_/_/\__,_/\__/\___/_/
+
+  &lt;== LOBSTER CONSOLE READY ==&gt;
+          </pre>
+        </aside>
+      </header>
+
+      <section class="toolbar" aria-label="代理人筛选">
+        <label class="search">
+          <span>搜索代理人</span>
+          <input id="searchInput" type="search" placeholder="输入名称、handle、职能关键词" />
+        </label>
+        <div class="filters">
+          <button class="filter-chip is-active" data-filter="all" type="button">全部</button>
+          <button class="filter-chip" data-filter="core" type="button">核心分身</button>
+          <button class="filter-chip" data-filter="team" type="button">团队 Agent</button>
+        </div>
+      </section>
+
+      <section class="layout">
+        <section class="board">
+          <div class="board-head">
+            <div>
+              <p class="section-kicker">REGISTRY</p>
+              <h2>已注册代理人</h2>
+            </div>
+            <p id="resultCount" class="result-count">加载中</p>
+          </div>
+          <div id="agentGrid" class="agent-grid" aria-live="polite"></div>
+        </section>
+
+        <aside class="detail-panel">
+          <div class="detail-head">
+            <p class="section-kicker">DETAIL</p>
+            <h2 id="detailName">选择一个 Agent</h2>
+            <p id="detailSubtitle" class="detail-subtitle">点击左侧卡片查看职责、能力和下一步动作。</p>
+          </div>
+
+          <div id="detailBadge" class="detail-badge">Phase 1</div>
+
+          <div class="detail-block">
+            <h3>角色摘要</h3>
+            <p id="detailSummary">这一阶段先完成注册表和选择器，不直接接 OpenClaw 原生聊天面板。</p>
+          </div>
+
+          <div class="detail-block">
+            <h3>专长领域</h3>
+            <ul id="detailSkills" class="skill-list">
+              <li>支持按职能快速浏览</li>
+              <li>支持为下一阶段聊天页预留路由</li>
+            </ul>
+          </div>
+
+          <div class="detail-block">
+            <h3>数据来源</h3>
+            <p id="detailSource" class="detail-source">workspace/aji-switch.py / workspace/team/agents/*/SOUL.md</p>
+          </div>
+
+          <div class="detail-actions">
+            <a id="detailRoute" class="ghost-link" href="#phase-2">预览聊天路由</a>
+            <a id="chatButton" class="primary-button" href="./chat.html">
+              进入聊天页占位
+            </a>
+          </div>
+        </aside>
+      </section>
+    </main>
+
+    <template id="agentCardTemplate">
+      <article class="agent-card">
+        <button class="agent-hit" type="button">
+          <div class="agent-top">
+            <span class="agent-icon"></span>
+            <span class="agent-state"></span>
+          </div>
+          <div class="agent-meta">
+            <p class="agent-group"></p>
+            <h3 class="agent-title"></h3>
+            <p class="agent-handle"></p>
+            <p class="agent-summary"></p>
+          </div>
+          <ul class="agent-skills"></ul>
+        </button>
+      </article>
+    </template>
+
+    <script src="./app.js" defer></script>
+  </body>
+</html>
