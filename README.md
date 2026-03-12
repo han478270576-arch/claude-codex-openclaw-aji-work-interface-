@@ -20,6 +20,7 @@
 - `config/` 默认配置和本地覆盖配置
 - `docs/` 使用说明
 - `lib/` 公共配置加载逻辑
+- `site/` 对外落地页和静态站点资源
 - `scripts/` 主机初始化与启动器安装
 
 ## 运行方式
@@ -57,6 +58,7 @@ bash ./scripts/install-launchers.sh
 - `docs/INSTALL.zh-CN.md`
 - `docs/DEPLOY-OPENCLAW-HOST.zh-CN.md`
 - `docs/SERVER-ROLL-OUT-CHECKLIST.zh-CN.md`
+- `docs/HTTPS-DOMAIN-SETUP.zh-CN.md`
 
 ## 当前状态
 
