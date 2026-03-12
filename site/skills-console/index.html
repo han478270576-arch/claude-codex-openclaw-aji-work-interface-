@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpenClaw Skills Neural Grid</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div id="loading-overlay">
+      <div class="loader-ring"></div>
+      <div class="loader-text">INITIALIZING NEURAL GRID</div>
+    </div>
+
+    <canvas id="particles"></canvas>
+
+    <div class="top-bar">
+      <div class="top-bar-inner">
+        <div class="top-title">
+          <h1>OpenClaw Skills Neural Grid</h1>
+          <span class="version" id="skill-version"></span>
+        </div>
+        <div class="search-box">
+          <span class="search-icon">&#128269;</span>
+          <input type="text" id="search-input" placeholder="Search skills..." autocomplete="off" />
+        </div>
+        <div class="cat-tabs" id="cat-tabs"></div>
+      </div>
+    </div>
+
+    <div class="grid-container">
+      <div class="hex-grid" id="hex-grid"></div>
+    </div>
+
+    <div class="detail-overlay" id="detail-overlay">
+      <div class="detail-panel" id="detail-panel">
+        <div class="detail-header">
+          <div class="detail-emoji" id="detail-emoji"></div>
+          <div class="detail-title-area">
+            <div class="detail-title" id="detail-title"></div>
+            <div class="detail-meta" id="detail-meta"></div>
+          </div>
+          <button class="detail-close" id="detail-close">&times;</button>
+        </div>
+        <div class="detail-body" id="detail-body"></div>
+        <div class="detail-actions" id="detail-actions"></div>
+      </div>
+    </div>
+
+    <div class="confirm-overlay" id="confirm-overlay">
+      <div class="confirm-box">
+        <h3 id="confirm-title">Confirm</h3>
+        <p id="confirm-msg"></p>
+        <div class="confirm-btns">
+          <button class="confirm-cancel" id="confirm-cancel">Cancel</button>
+          <button class="confirm-yes" id="confirm-yes">Confirm</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <div class="status-bar">
+      <div class="status-item"><div class="status-dot"></div><span id="st-skills">0 Skills</span></div>
+      <div class="status-item"><span id="st-cats">0 Categories</span></div>
+      <div class="status-item"><span id="st-particles">0 Particles</span></div>
+      <div class="status-item"><span id="st-fps">60 FPS</span></div>
+    </div>
+
+    <script src="./app.js" defer></script>
+  </body>
+</html>

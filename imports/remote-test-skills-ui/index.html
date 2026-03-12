@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenClaw Skills Neural Grid</title>
+<style>
+/* ===== RESET & BASE ===== */
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow-x:hidden}
+body{font-family:'SF Pro Display',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0f;color:#e0e8f0;overflow-y:auto}
+
+/* ===== PARTICLE CANVAS ===== */
+#particles{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+
+/* ===== LOADING OVERLAY ===== */
+#loading-overlay{position:fixed;inset:0;z-index:100;background:#0a0a0f;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .6s}
+#loading-overlay.fade-out{opacity:0;pointer-events:none}
+.loader-ring{width:80px;height:80px;border:3px solid transparent;border-top-color:#00f0ff;border-radius:50%;animation:spin 1s linear infinite;position:relative}
+.loader-ring::before{content:'';position:absolute;inset:6px;border:3px solid transparent;border-top-color:#ff00ff;border-radius:50%;animation:spin .6s linear infinite reverse}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader-text{margin-top:20px;font-size:14px;color:#00f0ff;letter-spacing:4px;animation:pulse-text 1.5s ease-in-out infinite}
+@keyframes pulse-text{0%,100%{opacity:.5}50%{opacity:1}}
+
+/* ===== TOP NAV ===== */
+.top-bar{position:sticky;top:0;z-index:30;background:rgba(10,10,15,.75);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,240,255,.15);padding:16px 24px 12px}
+.top-bar-inner{max-width:1400px;margin:0 auto}
+.top-title{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.top-title h1{font-size:22px;font-weight:700;background:linear-gradient(90deg,#00f0ff,#ff00ff,#00ff88);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.top-title .version{font-size:11px;color:rgba(0,240,255,.6);border:1px solid rgba(0,240,255,.2);padding:2px 8px;border-radius:10px}
+.search-box{position:relative;max-width:320px;margin-bottom:12px}
+.search-box input{width:100%;background:rgba(0,240,255,.06);border:1px solid rgba(0,240,255,.2);border-radius:8px;padding:8px 12px 8px 36px;color:#e0e8f0;font-size:14px;outline:none;transition:border-color .3s}
+.search-box input:focus{border-color:rgba(0,240,255,.5)}
+.search-box input::placeholder{color:rgba(224,232,240,.3)}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:16px;opacity:.4}
+.cat-tabs{display:flex;gap:8px;flex-wrap:wrap}
+.cat-tab{padding:6px 14px;border-radius:20px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:rgba(224,232,240,.6);transition:all .3s;user-select:none}
+.cat-tab:hover{border-color:rgba(0,240,255,.3);color:#e0e8f0}
+.cat-tab.active{background:rgba(0,240,255,.1);border-color:rgba(0,240,255,.5);color:#00f0ff;box-shadow:0 0 12px rgba(0,240,255,.15)}
+.cat-tab .count{margin-left:4px;font-size:11px;opacity:.6}
+
+/* ===== HEX GRID ===== */
+.grid-container{position:relative;z-index:5;max-width:1400px;margin:30px auto;padding:0 24px 60px}
+.hex-grid{display:grid;grid-template-columns:repeat(auto-fill,150px);gap:12px 8px;justify-content:center}
+@media(min-width:800px){.hex-grid{grid-template-columns:repeat(auto-fill,155px);gap:14px 10px}}
+
+/* ===== HEX CARD ===== */
+.hex-card{position:relative;width:145px;height:164px;cursor:pointer;transition:all .4s cubic-bezier(.23,1,.32,1);opacity:0;transform:translateY(30px) scale(.8)}
+.hex-card.visible{opacity:1;transform:translateY(0) scale(1)}
+.hex-card.dim{opacity:.15;transform:scale(.9)}
+.hex-card:nth-child(odd){margin-top:0}
+@media(min-width:600px){.hex-card:nth-child(even){margin-top:40px}}
+.hex-inner{width:100%;height:100%;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);background:rgba(15,18,30,.8);border:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;position:relative;transition:all .4s}
+.hex-border{position:absolute;inset:-2px;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);z-index:-1;transition:all .4s}
+.hex-card[data-cat="defi"] .hex-border{background:rgba(0,255,136,.15)}
+.hex-card[data-cat="finance"] .hex-border{background:rgba(255,215,0,.15)}
+.hex-card[data-cat="data"] .hex-border{background:rgba(0,240,255,.15)}
+.hex-card[data-cat="system"] .hex-border{background:rgba(255,0,255,.15)}
+.hex-card[data-cat="ai"] .hex-border{background:rgba(255,107,53,.15)}
+
+.hex-card:hover{transform:translateY(-8px) scale(1.08);z-index:10}
+.hex-card:hover .hex-inner{background:rgba(20,25,45,.95)}
+.hex-card[data-cat="defi"]:hover .hex-border{background:rgba(0,255,136,.5);box-shadow:0 0 30px rgba(0,255,136,.3)}
+.hex-card[data-cat="finance"]:hover .hex-border{background:rgba(255,215,0,.5);box-shadow:0 0 30px rgba(255,215,0,.3)}
+.hex-card[data-cat="data"]:hover .hex-border{background:rgba(0,240,255,.5);box-shadow:0 0 30px rgba(0,240,255,.3)}
+.hex-card[data-cat="system"]:hover .hex-border{background:rgba(255,0,255,.5);box-shadow:0 0 30px rgba(255,0,255,.3)}
+.hex-card[data-cat="ai"]:hover .hex-border{background:rgba(255,107,53,.5);box-shadow:0 0 30px rgba(255,107,53,.3)}
+
+.hex-emoji{font-size:36px;filter:drop-shadow(0 0 8px rgba(0,240,255,.3));transition:transform .3s}
+.hex-card:hover .hex-emoji{transform:scale(1.15)}
+.hex-name{font-size:12px;font-weight:600;text-align:center;padding:0 10px;line-height:1.3;color:rgba(224,232,240,.85);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hex-ver{font-size:10px;color:rgba(0,240,255,.4);letter-spacing:1px}
+
+/* ===== STATUS BADGE ON HEX ===== */
+.hex-status{position:absolute;top:6px;right:6px;font-size:9px;padding:2px 6px;border-radius:8px;font-weight:600;letter-spacing:.5px;z-index:2}
+.hex-status.installed{background:rgba(0,255,136,.15);color:#00ff88;border:1px solid rgba(0,255,136,.3)}
+.hex-status.disabled{background:rgba(255,165,0,.15);color:#ffa500;border:1px solid rgba(255,165,0,.3)}
+.hex-status.available{background:rgba(100,100,255,.15);color:#8888ff;border:1px solid rgba(100,100,255,.3)}
+
+/* Dim available cards slightly */
+.hex-card[data-status="available"] .hex-inner{opacity:.6}
+.hex-card[data-status="available"]:hover .hex-inner{opacity:1}
+/* Dim disabled cards */
+.hex-card[data-status="disabled"] .hex-inner{opacity:.45}
+.hex-card[data-status="disabled"]:hover .hex-inner{opacity:.85}
+
+/* ===== GLOW PULSE ANIMATION ===== */
+@keyframes glow-pulse{0%,100%{opacity:.3}50%{opacity:.7}}
+.hex-card .hex-border{animation:glow-pulse 3s ease-in-out infinite}
+.hex-card:nth-child(2n) .hex-border{animation-delay:.5s}
+.hex-card:nth-child(3n) .hex-border{animation-delay:1s}
+.hex-card:nth-child(5n) .hex-border{animation-delay:1.5s}
+
+/* ===== DETAIL PANEL OVERLAY ===== */
+.detail-overlay{position:fixed;inset:0;z-index:50;background:rgba(5,5,10,.85);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;opacity:0;transition:opacity .3s}
+.detail-overlay.open{display:flex;opacity:1}
+.detail-panel{width:min(620px,90vw);max-height:80vh;overflow-y:auto;background:rgba(12,14,25,.95);border:1px solid rgba(0,240,255,.2);border-radius:16px;position:relative;padding:0;transform:scale(.85);transition:transform .4s cubic-bezier(.23,1,.32,1);box-shadow:0 0 60px rgba(0,240,255,.1),0 0 120px rgba(255,0,255,.05)}
+.detail-overlay.open .detail-panel{transform:scale(1)}
+
+/* scan line */
+.detail-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#00f0ff,transparent);animation:scan-h 2s linear infinite;z-index:2}
+@keyframes scan-h{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+
+/* left accent bar */
+.detail-panel::after{content:'';position:absolute;top:16px;bottom:16px;left:0;width:3px;background:linear-gradient(180deg,#00f0ff,#ff00ff,#00ff88);border-radius:2px}
+
+.detail-header{padding:24px 24px 16px 20px;border-bottom:1px solid rgba(0,240,255,.1);display:flex;align-items:center;gap:14px}
+.detail-emoji{font-size:42px}
+.detail-title-area{flex:1}
+.detail-title{font-size:20px;font-weight:700;color:#e0e8f0}
+.detail-meta{font-size:12px;color:rgba(0,240,255,.5);margin-top:4px;display:flex;gap:12px;align-items:center}
+.detail-close{width:32px;height:32px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);border-radius:8px;color:#e0e8f0;font-size:18px;cursor:pointer;display:grid;place-items:center;transition:all .2s}
+.detail-close:hover{border-color:rgba(255,80,80,.5);color:#ff5050;background:rgba(255,80,80,.1)}
+
+.detail-body{padding:20px 24px 24px 20px}
+.detail-section{margin-bottom:18px}
+.detail-section-title{font-size:12px;font-weight:600;color:rgba(0,240,255,.6);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.detail-desc{font-size:14px;line-height:1.7;color:rgba(224,232,240,.8)}
+.detail-tags{display:flex;flex-wrap:wrap;gap:6px}
+.detail-tag{padding:3px 10px;border-radius:12px;font-size:11px;border:1px solid rgba(0,240,255,.2);color:rgba(0,240,255,.7);background:rgba(0,240,255,.05)}
+.detail-path{font-size:12px;color:rgba(0,240,255,.4);font-family:monospace;background:rgba(0,0,0,.3);padding:6px 10px;border-radius:6px;border:1px solid rgba(0,240,255,.1)}
+
+/* ===== ACTION BAR ===== */
+.detail-actions{padding:16px 24px 20px 20px;border-top:1px solid rgba(0,240,255,.1);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.act-btn{padding:8px 18px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid;transition:all .25s;display:inline-flex;align-items:center;gap:6px;letter-spacing:.3px}
+.act-btn:disabled{opacity:.4;cursor:not-allowed}
+.act-btn.install{background:rgba(0,255,136,.1);border-color:rgba(0,255,136,.4);color:#00ff88}
+.act-btn.install:hover:not(:disabled){background:rgba(0,255,136,.25);box-shadow:0 0 16px rgba(0,255,136,.2)}
+.act-btn.disable{background:rgba(255,165,0,.1);border-color:rgba(255,165,0,.4);color:#ffa500}
+.act-btn.disable:hover:not(:disabled){background:rgba(255,165,0,.25);box-shadow:0 0 16px rgba(255,165,0,.2)}
+.act-btn.enable{background:rgba(0,200,255,.1);border-color:rgba(0,200,255,.4);color:#00c8ff}
+.act-btn.enable:hover:not(:disabled){background:rgba(0,200,255,.25);box-shadow:0 0 16px rgba(0,200,255,.2)}
+.act-btn.uninstall{background:rgba(255,60,60,.08);border-color:rgba(255,60,60,.3);color:#ff5050}
+.act-btn.uninstall:hover:not(:disabled){background:rgba(255,60,60,.2);box-shadow:0 0 16px rgba(255,60,60,.2)}
+.act-btn.installed-badge{background:rgba(0,255,136,.08);border-color:rgba(0,255,136,.2);color:rgba(0,255,136,.6);cursor:default}
+.act-status{font-size:11px;color:rgba(224,232,240,.4);margin-left:auto}
+.act-spinner{display:inline-block;width:14px;height:14px;border:2px solid transparent;border-top-color:currentColor;border-radius:50%;animation:spin .6s linear infinite}
+
+/* ===== CONFIRM MODAL ===== */
+.confirm-overlay{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center}
+.confirm-overlay.open{display:flex}
+.confirm-box{background:rgba(15,15,25,.98);border:1px solid rgba(255,60,60,.3);border-radius:14px;padding:24px;max-width:400px;width:90vw;text-align:center}
+.confirm-box h3{color:#ff5050;margin-bottom:12px;font-size:16px}
+.confirm-box p{color:rgba(224,232,240,.7);font-size:14px;margin-bottom:20px;line-height:1.5}
+.confirm-box .confirm-btns{display:flex;gap:10px;justify-content:center}
+.confirm-box .confirm-btns button{padding:8px 24px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid}
+.confirm-cancel{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.2) !important;color:#e0e8f0}
+.confirm-cancel:hover{background:rgba(255,255,255,.1)}
+.confirm-yes{background:rgba(255,60,60,.15);border-color:rgba(255,60,60,.4) !important;color:#ff5050}
+.confirm-yes:hover{background:rgba(255,60,60,.3)}
+
+/* ===== TOAST ===== */
+.toast{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);z-index:70;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:500;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
+.toast.success{background:rgba(0,255,136,.15);border:1px solid rgba(0,255,136,.3);color:#00ff88}
+.toast.error{background:rgba(255,60,60,.15);border:1px solid rgba(255,60,60,.3);color:#ff5050}
+
+/* ===== BOTTOM STATUS BAR ===== */
+.status-bar{position:fixed;bottom:0;left:0;right:0;z-index:30;background:rgba(10,10,15,.8);backdrop-filter:blur(12px);border-top:1px solid rgba(0,240,255,.1);padding:8px 24px;display:flex;justify-content:center;gap:24px;font-size:12px;color:rgba(0,240,255,.5)}
+.status-item{display:flex;align-items:center;gap:6px}
+.status-dot{width:6px;height:6px;border-radius:50%;background:#00f0ff;animation:glow-pulse 2s ease-in-out infinite}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(0,240,255,.2);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:rgba(0,240,255,.4)}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:600px){
+  .hex-grid{grid-template-columns:repeat(auto-fill,120px);gap:8px 4px}
+  .hex-card{width:115px;height:130px}
+  .hex-card:nth-child(even){margin-top:30px}
+  .hex-emoji{font-size:28px}
+  .hex-name{font-size:11px}
+  .top-title h1{font-size:18px}
+  .status-bar{gap:12px;font-size:11px}
+  .detail-actions{padding:12px 16px}
+}
+</style>
+</head>
+<body>
+
+<!-- Loading Overlay -->
+<div id="loading-overlay">
+  <div class="loader-ring"></div>
+  <div class="loader-text">INITIALIZING NEURAL GRID</div>
+</div>
+
+<!-- Particle Background -->
+<canvas id="particles"></canvas>
+
+<!-- Top Navigation -->
+<div class="top-bar">
+  <div class="top-bar-inner">
+    <div class="top-title">
+      <h1>OpenClaw Skills Neural Grid</h1>
+      <span class="version" id="skill-version"></span>
+    </div>
+    <div class="search-box">
+      <span class="search-icon">&#128269;</span>
+      <input type="text" id="search-input" placeholder="Search skills..." autocomplete="off">
+    </div>
+    <div class="cat-tabs" id="cat-tabs"></div>
+  </div>
+</div>
+
+<!-- Hex Grid -->
+<div class="grid-container">
+  <div class="hex-grid" id="hex-grid"></div>
+</div>
+
+<!-- Detail Panel -->
+<div class="detail-overlay" id="detail-overlay">
+  <div class="detail-panel" id="detail-panel">
+    <div class="detail-header">
+      <div class="detail-emoji" id="detail-emoji"></div>
+      <div class="detail-title-area">
+        <div class="detail-title" id="detail-title"></div>
+        <div class="detail-meta" id="detail-meta"></div>
+      </div>
+      <button class="detail-close" id="detail-close">&times;</button>
+    </div>
+    <div class="detail-body" id="detail-body"></div>
+    <div class="detail-actions" id="detail-actions"></div>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <h3 id="confirm-title">Confirm</h3>
+    <p id="confirm-msg"></p>
+    <div class="confirm-btns">
+      <button class="confirm-cancel" id="confirm-cancel">Cancel</button>
+      <button class="confirm-yes" id="confirm-yes">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Bottom Status Bar -->
+<div class="status-bar">
+  <div class="status-item"><div class="status-dot"></div><span id="st-skills">0 Skills</span></div>
+  <div class="status-item"><span id="st-cats">0 Categories</span></div>
+  <div class="status-item"><span id="st-particles">0 Particles</span></div>
+  <div class="status-item"><span id="st-fps">60 FPS</span></div>
+</div>
+
+<script>
+// ===== CONFIG =====
+const API_BASE = '/skills/api';
+const API_TOKEN = '21b91dedc2411853d2257b3241672c7139e8dfb64ab97a50';
+
+// ===== DATA =====
+let SKILLS_DATA = { skills: [], categories: {} };
+let SKILL_STATUS = {}; // id -> {status, protected}
+
+// ===== PARTICLE ENGINE =====
+const ParticleEngine = (() => {
+  const canvas = document.getElementById('particles');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+  let mouse = { x: -1000, y: -1000 };
+  let W, H;
+  const PARTICLE_COUNT = 120;
+  const MAX_DIST = 130;
+  const MOUSE_RADIUS = 180;
+  let frameCount = 0;
+  let lastFpsTime = performance.now();
+
+  class Particle {
+    constructor() { this.reset(); }
+    reset() {
+      this.x = Math.random() * W;
+      this.y = Math.random() * H;
+      this.vx = (Math.random() - 0.5) * 0.5;
+      this.vy = (Math.random() - 0.5) * 0.5;
+      this.r = Math.random() * 2 + 0.5;
+      this.alpha = Math.random() * 0.5 + 0.2;
+    }
+    update() {
+      const dx = this.x - mouse.x, dy = this.y - mouse.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < MOUSE_RADIUS && dist > 0) {
+        const force = (MOUSE_RADIUS - dist) / MOUSE_RADIUS * 0.02;
+        this.vx += dx / dist * force;
+        this.vy += dy / dist * force;
+      }
+      this.vx *= 0.995; this.vy *= 0.995;
+      this.x += this.vx; this.y += this.vy;
+      if (this.x < 0) this.x = W; if (this.x > W) this.x = 0;
+      if (this.y < 0) this.y = H; if (this.y > H) this.y = 0;
+    }
+  }
+
+  function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+  function init() {
+    resize();
+    particles = Array.from({ length: PARTICLE_COUNT }, () => new Particle());
+    window.addEventListener('resize', resize);
+    document.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+    document.addEventListener('mouseleave', () => { mouse.x = -1000; mouse.y = -1000; });
+    requestAnimationFrame(draw);
+  }
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    for (const p of particles) {
+      p.update();
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(0,240,255,${p.alpha})`; ctx.fill();
+    }
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x, dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < MAX_DIST) {
+          ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = `rgba(0,240,255,${(1 - dist / MAX_DIST) * 0.15})`; ctx.lineWidth = 0.6; ctx.stroke();
+        }
+      }
+    }
+    frameCount++;
+    const now = performance.now();
+    if (now - lastFpsTime >= 1000) {
+      document.getElementById('st-fps').textContent = frameCount + ' FPS';
+      document.getElementById('st-particles').textContent = particles.length + ' Particles';
+      frameCount = 0; lastFpsTime = now;
+    }
+    requestAnimationFrame(draw);
+  }
+  return { init };
+})();
+
+// ===== API HELPERS =====
+async function apiCall(endpoint, body) {
+  const res = await fetch(API_BASE + endpoint, {
+    method: body ? 'POST' : 'GET',
+    headers: { 'Authorization': 'Bearer ' + API_TOKEN, 'Content-Type': 'application/json' },
+    body: body ? JSON.stringify(body) : undefined
+  });
+  return await res.json();
+}
+
+async function loadStatusMap() {
+  try {
+    const data = await apiCall('/list');
+    if (data.ok) {
+      SKILL_STATUS = {};
+      for (const s of data.skills) {
+        SKILL_STATUS[s.id] = { status: s.status, protected: s.protected };
+      }
+    }
+  } catch (e) { console.warn('status API unavailable:', e); }
+}
+
+function getStatus(id) {
+  return SKILL_STATUS[id] || { status: 'installed', protected: false };
+}
+
+// ===== TOAST =====
+let toastTimer = null;
+function showToast(msg, type) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// ===== CONFIRM =====
+let confirmResolve = null;
+function showConfirm(title, msg) {
+  return new Promise(resolve => {
+    confirmResolve = resolve;
+    document.getElementById('confirm-title').textContent = title;
+    document.getElementById('confirm-msg').textContent = msg;
+    document.getElementById('confirm-overlay').classList.add('open');
+  });
+}
+document.getElementById('confirm-cancel').onclick = () => {
+  document.getElementById('confirm-overlay').classList.remove('open');
+  if (confirmResolve) confirmResolve(false);
+};
+document.getElementById('confirm-yes').onclick = () => {
+  document.getElementById('confirm-overlay').classList.remove('open');
+  if (confirmResolve) confirmResolve(true);
+};
+
+// ===== APP LOGIC =====
+let currentCat = 'all';
+let currentSearch = '';
+let currentDetailId = null;
+
+async function loadData() {
+  try {
+    const res = await fetch('./data/skills.json');
+    SKILLS_DATA = await res.json();
+  } catch (e) { console.error('Failed to load skills data:', e); }
+}
+
+const STATUS_LABELS = { installed: 'ACTIVE', disabled: 'OFF', available: 'NEW' };
+
+function renderTabs() {
+  const tabs = document.getElementById('cat-tabs');
+  const counts = { all: SKILLS_DATA.skills.length };
+  for (const s of SKILLS_DATA.skills) counts[s.category] = (counts[s.category] || 0) + 1;
+  let html = `<div class="cat-tab active" data-cat="all">ALL<span class="count">${counts.all}</span></div>`;
+  for (const [id, cat] of Object.entries(SKILLS_DATA.categories)) {
+    html += `<div class="cat-tab" data-cat="${id}">${cat.emoji} ${cat.label}<span class="count">${counts[id] || 0}</span></div>`;
+  }
+  tabs.innerHTML = html;
+  tabs.querySelectorAll('.cat-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      currentCat = tab.dataset.cat;
+      renderGrid();
+    });
+  });
+}
+
+function renderGrid() {
+  const grid = document.getElementById('hex-grid');
+  const filtered = SKILLS_DATA.skills.filter(s => {
+    if (currentCat !== 'all' && s.category !== currentCat) return false;
+    if (currentSearch) {
+      const q = currentSearch.toLowerCase();
+      return s.name.toLowerCase().includes(q) || s.id.toLowerCase().includes(q) ||
+             s.description.toLowerCase().includes(q) || (s.tags || []).some(t => t.toLowerCase().includes(q));
+    }
+    return true;
+  });
+
+  grid.innerHTML = filtered.map(s => {
+    const st = getStatus(s.id);
+    const status = s.status || st.status || 'installed';
+    const label = STATUS_LABELS[status] || status;
+    return `
+    <div class="hex-card" data-cat="${s.category}" data-id="${s.id}" data-status="${status}">
+      <span class="hex-status ${status}">${label}</span>
+      <div class="hex-border"></div>
+      <div class="hex-inner">
+        <div class="hex-emoji">${s.emoji}</div>
+        <div class="hex-name" title="${s.name}">${s.name}</div>
+        <div class="hex-ver">v${s.version}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  grid.querySelectorAll('.hex-card').forEach((card, i) => {
+    setTimeout(() => card.classList.add('visible'), 60 * i);
+    card.addEventListener('click', () => openDetail(card.dataset.id));
+  });
+}
+
+function openDetail(id) {
+  currentDetailId = id;
+  const skill = SKILLS_DATA.skills.find(s => s.id === id);
+  if (!skill) return;
+  const cat = SKILLS_DATA.categories[skill.category] || {};
+  const st = getStatus(id);
+  const status = skill.status || st.status || 'installed';
+
+  document.getElementById('detail-emoji').textContent = skill.emoji;
+  document.getElementById('detail-title').textContent = skill.name;
+  document.getElementById('detail-meta').innerHTML =
+    `<span>v${skill.version}</span>` +
+    `<span style="color:${cat.color || '#00f0ff'}">${cat.emoji || ''} ${cat.label || skill.category}</span>` +
+    `<span class="hex-status ${status}" style="font-size:10px">${STATUS_LABELS[status] || status}</span>`;
+
+  let bodyHtml = `<div class="detail-section">
+    <div class="detail-section-title">&#128203; Description</div>
+    <div class="detail-desc">${escHtml(skill.description)}</div>
+  </div>`;
+  if (skill.tags && skill.tags.length) {
+    bodyHtml += `<div class="detail-section">
+      <div class="detail-section-title">&#127991;&#65039; Tags</div>
+      <div class="detail-tags">${skill.tags.map(t => `<span class="detail-tag">${escHtml(t)}</span>`).join('')}</div>
+    </div>`;
+  }
+  bodyHtml += `<div class="detail-section">
+    <div class="detail-section-title">&#128193; Source</div>
+    <div class="detail-path">${escHtml(skill.path)}</div>
+  </div>`;
+  document.getElementById('detail-body').innerHTML = bodyHtml;
+
+  renderActions(id, status, st.protected);
+
+  const overlay = document.getElementById('detail-overlay');
+  overlay.style.display = 'flex';
+  requestAnimationFrame(() => overlay.classList.add('open'));
+}
+
+function renderActions(id, status, isProtected) {
+  const el = document.getElementById('detail-actions');
+  let html = '';
+
+  if (status === 'available') {
+    html += `<button class="act-btn install" data-action="install" data-id="${id}">&#128229; Install</button>`;
+  } else if (status === 'installed') {
+    html += `<span class="act-btn installed-badge">&#9989; Installed</span>`;
+    html += `<button class="act-btn disable" data-action="disable" data-id="${id}">&#9208;&#65039; Disable</button>`;
+    if (!isProtected) {
+      html += `<button class="act-btn uninstall" data-action="uninstall" data-id="${id}">&#128465;&#65039; Uninstall</button>`;
+    }
+  } else if (status === 'disabled') {
+    html += `<button class="act-btn enable" data-action="enable" data-id="${id}">&#9654;&#65039; Enable</button>`;
+    if (!isProtected) {
+      html += `<button class="act-btn uninstall" data-action="uninstall" data-id="${id}">&#128465;&#65039; Uninstall</button>`;
+    }
+  }
+
+  if (isProtected) {
+    html += `<span class="act-status">&#128274; Protected</span>`;
+  }
+
+  el.innerHTML = html;
+
+  el.querySelectorAll('[data-action]').forEach(btn => {
+    btn.addEventListener('click', () => handleAction(btn.dataset.action, btn.dataset.id, btn));
+  });
+}
+
+async function handleAction(action, id, btn) {
+  if (action === 'uninstall') {
+    const ok = await showConfirm(
+      'Uninstall Skill',
+      `Are you sure you want to uninstall "${id}"? This will remove all skill files.`
+    );
+    if (!ok) return;
+  }
+
+  // Show spinner
+  const origHtml = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = `<span class="act-spinner"></span> ${action}...`;
+
+  try {
+    const result = await apiCall('/' + action, { id });
+    if (result.ok) {
+      showToast(result.message || `${action} success`, 'success');
+      // Refresh data
+      await Promise.all([loadData(), loadStatusMap()]);
+      renderTabs();
+      renderGrid();
+      // Re-open detail if still relevant
+      if (action === 'uninstall') {
+        closeDetail();
+      } else {
+        openDetail(id);
+      }
+    } else {
+      showToast(result.error || `${action} failed`, 'error');
+      btn.disabled = false;
+      btn.innerHTML = origHtml;
+    }
+  } catch (e) {
+    showToast('Network error: ' + e.message, 'error');
+    btn.disabled = false;
+    btn.innerHTML = origHtml;
+  }
+}
+
+function closeDetail() {
+  currentDetailId = null;
+  const overlay = document.getElementById('detail-overlay');
+  overlay.classList.remove('open');
+  setTimeout(() => { overlay.style.display = 'none'; }, 300);
+}
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// ===== INIT =====
+(async () => {
+  ParticleEngine.init();
+  await Promise.all([loadData(), loadStatusMap()]);
+
+  document.getElementById('skill-version').textContent = SKILLS_DATA.skills.length + ' Skills';
+  document.getElementById('st-skills').textContent = SKILLS_DATA.skills.length + ' Skills';
+  document.getElementById('st-cats').textContent = Object.keys(SKILLS_DATA.categories).length + ' Categories';
+
+  renderTabs();
+  renderGrid();
+
+  document.getElementById('search-input').addEventListener('input', e => {
+    currentSearch = e.target.value.trim();
+    renderGrid();
+  });
+
+  document.getElementById('detail-close').addEventListener('click', closeDetail);
+  document.getElementById('detail-overlay').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeDetail();
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetail(); });
+
+  setTimeout(() => {
+    const overlay = document.getElementById('loading-overlay');
+    overlay.classList.add('fade-out');
+    setTimeout(() => overlay.remove(), 600);
+  }, 1500);
+})();
+</script>
+</body>
+</html>
